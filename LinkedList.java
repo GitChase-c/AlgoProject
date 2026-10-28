@@ -1,51 +1,53 @@
 class LinkedList {
     Node head;
+    Node tail;
+    boolean hasCreatedCycle = false;
 
-    static class Node {
-        int data;
-        Node next;
-
-        Node(int d) {
-            data = d;
-            next = null;
-        }
-    }
 
     public void insert(int data) {
+        if (hasCreatedCycle) {
+            throw new IllegalStateException(
+                    "Cannot insert into a cyclic list"
+            );
+        }
+
         Node newNode = new Node(data);
-        if (this.head == null) {
-            this.head = newNode;
+
+        if (head == null) {
+            head = newNode;
+            tail = newNode;
         }
         else {
-            Node temp = this.head;
-            while (temp.next != null) {
-                temp = temp.next;
+            tail.next = newNode;
+            tail = newNode;
+        }
+    }
+
+    public void makeCycle(int index) {
+        Node cycleStart = getNodeAtI(index);
+        tail.next = cycleStart;
+        hasCreatedCycle = true;
+    }
+
+    public Node getNodeAtI (int index){
+        Node temp = head;
+        for (int i = 0; i < index; i++) {
+            if (temp == null) {
+                throw new IndexOutOfBoundsException();
             }
-            temp.next = newNode;
-        }
-    }
-    public void makeCycle(int data) {
-        Node newNode = new Node(data);
-        Node temp = this.head;
-        while (temp.next != null) {
             temp = temp.next;
         }
-        temp.next = newNode;
-        newNode.next = getNodeAtI(2);
-    }
-    public Node getNodeAtI (int pointer){
-        int i = 0;
-        Node temp = this.head;
-        while (i != pointer){
-            temp = temp.next;
-            i++;
+
+        if (temp == null) {
+            throw new IndexOutOfBoundsException();
         }
+
         return temp;
     }
-    public Object checkForCycle(){
+    public Integer checkForCycle(){
         Node slow = this.head;
         Node fast = this.head;
-        while (fast != null & fast.next != null){
+        while (fast != null && fast.next != null){
             slow = slow.next;
             fast = fast.next.next;
             if (fast == slow){

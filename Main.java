@@ -5,15 +5,19 @@ public class Main {
         myList.insert(10);
         myList.insert(20);
         myList.insert(30);
-        myList.makeCycle(25);
+        myList.insert(40);
+        myList.insert(50);
 
-        Object cycle = myList.checkForCycle();
-        if ( cycle == null){
-            myList.printList();
-        }
-        else {
-            System.out.print("Cycle Detected, starts at " + cycle);
-        }
+        myList.makeCycle(2);
 
+        Integer cycle = myList.checkForCycle();
+
+        if (cycle == null) {
+            System.out.println("No cycle detected");
+        } else {
+            System.out.println(
+                    "Cycle detected, starts at " + cycle
+            );
+        }
     }
 }
