@@ -99,6 +99,53 @@ public class Main {
                     UndirectedCycleDetection.hasCycle(cyclicGraph)
             );
         }
+
+        System.out.println("\n=== UNDIRECTED BFS CYCLE DETECTION ===");
+
+        for (int n = 100; n <= 500; n += 100) {
+
+            Graph acyclicGraph = GraphGenerator.undirectedTree(n);
+
+            Graph cyclicGraph = GraphGenerator.undirectedWithCycle(n);
+
+            runTest(
+                    "Undirected BFS Acyclic (" + n + " vertices)",
+                    false,
+                    BFSCycleDetection.hasCycle(acyclicGraph)
+            );
+
+            runTest(
+                    "Undirected BFS Cyclic (" + n + " vertices)",
+                    true,
+                    BFSCycleDetection.hasCycle(cyclicGraph)
+            );
+        }
+
+
+        System.out.println("\n=== DIRECTED BFS (KAHN) CYCLE DETECTION ===");
+
+        for (int n = 100; n <= 500; n += 100) {
+
+            Graph acyclicGraph =
+                    GraphGenerator.directedAcyclic(n);
+
+            Graph cyclicGraph =
+                    GraphGenerator.directedBranchingWithCycle(n);
+
+            runTest(
+                    "Kahn Directed Acyclic (" + n + " vertices)",
+                    false,
+                    KahnCycleDetection.hasCycle(acyclicGraph)
+            );
+
+            runTest(
+                    "Kahn Directed Cyclic (" + n + " vertices)",
+                    true,
+                    KahnCycleDetection.hasCycle(cyclicGraph)
+            );
+        }
+
+
     }
 
     public static void runTest(
