@@ -1,5 +1,7 @@
-import java.util.Queue;
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Queue;
+
 public class BFSCycleDetection {
 
     //queue.add(x) add vertex to back of queue
@@ -7,8 +9,8 @@ public class BFSCycleDetection {
     //queue.isempty determines whehter vertiices rtemain
 
     /* graph.getVertexCount();
-graph.neighborsOf(currentVertex);
-graph.isDirected(); */
+    graph.neighborsOf(currentVertex);
+    graph.isDirected(); */
 
     //validate graph type
     //crerated visit and parent info
@@ -16,23 +18,27 @@ graph.isDirected(); */
     //return ture when cycle is found
 
     public static boolean hasCycle(Graph graph) {
+        if (graph.isDirected()) {
+            throw new IllegalArgumentException("This BFS cycle detector requires an undirected graph");
+        }
 
-        //keeps track of visited status (true = visited, false = not visited)
         int vertices = graph.getVertexCount();
         boolean[] visited = new boolean[vertices];
         int[] parent = new int[vertices];
+        boolean[] skippedParentEdge = new boolean[vertices];
+        Arrays.fill(parent, -1);
 
-        //stores veticies awating exploireation
         Queue<Integer> queue = new ArrayDeque<>();
 
-        for (int i = 0; i < vertices; i++) {
-            if (!visited[i]) {
-                visited[i] = true;
-                queue.add(i);
+        for (int start = 0; start < vertices; start++) {
+            if (visited[start]) {
+                continue;
             }
 
-            while (!queue.isEmpty()) {
+            visited[start] = true;
+            queue.add(start);
 
+            while (!queue.isEmpty()) {
                 int currentVertex = queue.remove();
 
                 for (int neighbor : graph.neighborsOf(currentVertex)) {
@@ -40,15 +46,15 @@ graph.isDirected(); */
                         visited[neighbor] = true;
                         parent[neighbor] = currentVertex;
                         queue.add(neighbor);
-                    }
-                    else if(neighbor != parent[currentVertex]) {
+                    } else if (neighbor == parent[currentVertex] && !skippedParentEdge[currentVertex]) {
+                        skippedParentEdge[currentVertex] = true;
+                    } else {
                         return true;
                     }
-
                 }
             }
         }
+
         return false;
     }
 }
-

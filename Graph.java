@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 public class Graph {
     private final ArrayList<LinkedList> adjacencyList = new ArrayList<>();
     private final boolean directed;
-    private int edgeCount = 0;
+    private int edgeCount;
 
     public Graph() {
         this(true);
@@ -18,18 +18,20 @@ public class Graph {
 
     public Graph(int vertices, boolean directed) {
         this(directed);
+
         if (vertices < 0) {
             throw new IllegalArgumentException("Vertex count cannot be negative");
         }
+
         for (int i = 0; i < vertices; i++) {
-            addGraphNode();
+            adjacencyList.add(new LinkedList());
         }
     }
 
     public int addGraphNode() {
-        int newId = adjacencyList.size();
+        int vertexId = adjacencyList.size();
         adjacencyList.add(new LinkedList());
-        return newId;
+        return vertexId;
     }
 
     public void addEdge(int from, int to) {
@@ -37,47 +39,53 @@ public class Graph {
         validateVertex(to);
 
         adjacencyList.get(from).insert(to);
+
         if (!directed && from != to) {
             adjacencyList.get(to).insert(from);
         }
+
         edgeCount++;
     }
 
     public List<Integer> getNeighbors(int vertex) {
-        List<Integer> result = new ArrayList<>();
+        List<Integer> neighbors = new ArrayList<>();
+
         for (int neighbor : neighborsOf(vertex)) {
-            result.add(neighbor);
+            neighbors.add(neighbor);
         }
-        return result;
+
+        return neighbors;
     }
 
     public Iterable<Integer> neighborsOf(int vertex) {
         validateVertex(vertex);
         final Node first = adjacencyList.get(vertex).head;
 
-        return new Iterable<Integer>() {
+        return () -> new Iterator<Integer>() {
+            private Node current = first;
+
             @Override
-            public Iterator<Integer> iterator() {
-                return new Iterator<Integer>() {
-                    private Node current = first;
+            public boolean hasNext() {
+                return current != null;
+            }
 
-                    @Override
-                    public boolean hasNext() {
-                        return current != null;
-                    }
+            @Override
+            public Integer next() {
+                if (current == null) {
+                    throw new NoSuchElementException();
+                }
 
-                    @Override
-                    public Integer next() {
-                        if (current == null) {
-                            throw new NoSuchElementException();
-                        }
-                        int value = current.data;
-                        current = current.next;
-                        return value;
-                    }
-                };
+                int neighbor = current.data;
+                current = current.next;
+                return neighbor;
             }
         };
+    }
+
+    public int getFirstNeighbor(int vertex) {
+        validateVertex(vertex);
+        Node first = adjacencyList.get(vertex).head;
+        return first == null ? -1 : first.data;
     }
 
     public int getVertexCount() {
@@ -94,6 +102,7 @@ public class Graph {
 
     public void printGraph() {
         System.out.println(directed ? "DIRECTED GRAPH" : "UNDIRECTED GRAPH");
+
         for (int vertex = 0; vertex < getVertexCount(); vertex++) {
             System.out.println(vertex + " -> " + getNeighbors(vertex));
         }

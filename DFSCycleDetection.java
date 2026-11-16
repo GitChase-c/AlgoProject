@@ -1,24 +1,61 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
 
+//changed from recursive to iterative so that dfs works as expected on undirected and large graphs
 public class DFSCycleDetection {
 
-    public static boolean hasCycle(Graph graph) {
+    private static class Frame {
+        final int vertex;
+        final int parent;
+        final Iterator<Integer> neighbors;
+        boolean skippedParentEdge;
 
-        if (!graph.isDirected()) {
-            throw new IllegalArgumentException(
-                    "This DFS implementation requires a directed graph"
-            );
+        Frame(Graph graph, int vertex, int parent) {
+            this.vertex = vertex;
+            this.parent = parent;
+            this.neighbors = graph.neighborsOf(vertex).iterator();
         }
+    }
 
+    public static boolean hasCycle(Graph graph) {
+        if (graph.isDirected()) {
+            return directedHasCycle(graph);
+        }
+        return undirectedHasCycle(graph);
+    }
+
+    private static boolean directedHasCycle(Graph graph) {
         int vertices = graph.getVertexCount();
-
-        //setting an array to keep track of vertex states
         int[] state = new int[vertices];
+        Deque<Frame> stack = new ArrayDeque<>();
 
-        for (int i = 0; i < vertices; i++) {
+        for (int start = 0; start < vertices; start++) {
+            if (state[start] != 0) {
+                continue;
+            }
 
-            if (state[i] == 0) {
-                if (dfs(graph, i, state)) {
+            state[start] = 1;
+            stack.push(new Frame(graph, start, -1));
+
+            while (!stack.isEmpty()) {
+                Frame current = stack.peek();
+
+                if (!current.neighbors.hasNext()) {
+                    state[current.vertex] = 2;
+                    stack.pop();
+                    continue;
+                }
+
+                int neighbor = current.neighbors.next();
+
+                if (state[neighbor] == 1) {
                     return true;
+                }
+
+                if (state[neighbor] == 0) {
+                    state[neighbor] = 1;
+                    stack.push(new Frame(graph, neighbor, current.vertex));
                 }
             }
         }
@@ -26,32 +63,42 @@ public class DFSCycleDetection {
         return false;
     }
 
-    //recursive helper function to check for cycles down a graph path
-    private static boolean dfs(
-            Graph graph,
-            int currentVertex,
-            int[] state) {
+    private static boolean undirectedHasCycle(Graph graph) {
+        int vertices = graph.getVertexCount();
+        boolean[] visited = new boolean[vertices];
+        Deque<Frame> stack = new ArrayDeque<>();
 
-        // 1 = Visiting
-        state[currentVertex] = 1;
+        for (int start = 0; start < vertices; start++) {
+            if (visited[start]) {
+                continue;
+            }
 
-        for (int neighbor : graph.neighborsOf(currentVertex)) {
+            visited[start] = true;
+            stack.push(new Frame(graph, start, -1));
 
-            // Neighbor is unvisited
-            if (state[neighbor] == 0) {
+            while (!stack.isEmpty()) {
+                Frame current = stack.peek();
 
-                if (dfs(graph, neighbor, state)) {
+                if (!current.neighbors.hasNext()) {
+                    stack.pop();
+                    continue;
+                }
+
+                int neighbor = current.neighbors.next();
+
+                if (neighbor == current.parent && !current.skippedParentEdge) {
+                    current.skippedParentEdge = true;
+                    continue;
+                }
+
+                if (visited[neighbor]) {
                     return true;
                 }
 
-                // Neighbor is still on the DFS path
-            } else if (state[neighbor] == 1) {
-                return true;
+                visited[neighbor] = true;
+                stack.push(new Frame(graph, neighbor, current.vertex));
             }
         }
-
-        // 2 = Visited (fully processed)
-        state[currentVertex] = 2;
 
         return false;
     }
