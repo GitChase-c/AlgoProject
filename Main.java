@@ -208,7 +208,7 @@ public class Main {
         String cycleType = cyclic ? "Cyclic" : "Acyclic";
 
         System.out.printf("%-5s | %-14s | %-7s | requested=%-6d actual=%-6d | " +
-                        "expected=%-3d actual=%-3d | %-4s | %.2f ns (%.4f us)%n",
+                        "expected=%-3d actual=%-3d | %-4s | %.2f ns %n",
                 algorithm, type, cycleType, requested, actualVertices,
                 expected, actual, correct ? "PASS" : "FAIL", medianNs, medianNs / 1000.0);
 
